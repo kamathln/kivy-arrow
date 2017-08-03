@@ -32,7 +32,8 @@ from kivy.clock import Clock
 class ArrowTest(App):
     def add_random_arrow(self,*args):
         newarrow = Arrow(
-                         acolor=[random(),random(),random(),0.8],
+                         main_color=[random(),random(),random(),0.8],
+                         outline_color=[random()/2.0,random()/2.0,random()/2.0,0.8],
                          o_x= -random()*self.layout.width/10.0, 
                          o_y=random()*self.layout.height,
                          #to_x=random()*self.layout.width,
@@ -51,8 +52,9 @@ class ArrowTest(App):
         for arrow in self.arrows:
             arrow.o_x, arrow.o_y = move_point(arrow.o_x,arrow.o_y,arrow.angle,16)
             arrow.to_x,arrow.to_y = move_point(arrow.to_x,arrow.to_y,arrow.angle,16)
-            arrow.acolor=[x for x in map(lambda y:y * 0.99, arrow.acolor)]
-            if arrow.acolor[3] < 0.1:
+            arrow.main_color=[x for x in map(lambda y:y * 0.97, arrow.main_color)]
+            arrow.outline_color=[x for x in map(lambda y:y * 0.97, arrow.outline_color)]
+            if arrow.main_color[3] < 0.1:
                 self.arrows.remove(arrow)
                 self.layout.remove_widget(arrow)
             
