@@ -51,7 +51,6 @@ class ArrowTest(App):
         #self.dtcounter += 1
         for arrow in self.arrows:
             arrow.o_x, arrow.o_y = move_point(arrow.o_x,arrow.o_y,arrow.angle,16)
-            arrow.to_x,arrow.to_y = move_point(arrow.to_x,arrow.to_y,arrow.angle,16)
             arrow.main_color=[x for x in map(lambda y:y * 0.97, arrow.main_color)]
             arrow.outline_color=[x for x in map(lambda y:y * 0.97, arrow.outline_color)]
             if arrow.main_color[3] < 0.1:

@@ -35,36 +35,68 @@ piby180 = math.pi/180.0
 class KVector(EventDispatcher):
     o_x = NumericProperty(0)
     o_y = NumericProperty(0)
-    to_x = NumericProperty(0)
-    to_y = NumericProperty(0)
-    to_pos = ReferenceListProperty(to_x,to_y)
+#    to_x = NumericProperty(0)
+#    to_y = NumericProperty(0)
+#    to_pos = ReferenceListProperty(to_x,to_y)
+    angle = NumericProperty(0)
+    distance = NumericProperty(0)
 
-    def get_angle(self):
-        return ((math.atan2(self.to_x - self.o_x, self.o_y - self.to_y)/piby180)+630.0 ) % 360.0 
+#    def get_angle(self):
+#        return ((math.atan2(self.to_x - self.o_x, self.o_y - self.to_y)/piby180)+630.0 ) % 360.0 
+#
+#    def set_angle(self,angle):
+#        self.to_x = self.o_x + (math.cos(angle * piby180) * self.distance)
+#        self.to_y = self.o_y + (math.sin(angle * piby180) * self.distance)
+#
+#    def get_distance(self):
+#        absx = abs(self.to_x-self.o_x) 
+#        absy = abs(self.to_y-self.o_y) 
+#        return math.sqrt((absx*absx)+(absy*absy))
+#
+#    def set_distance(self, distance):
+#        self.to_x = self.o_x + ((math.cos(self.angle * piby180) * distance))
+#        self.to_y = self.o_y + ((math.sin(self.angle * piby180) * distance))
+#        
+##    angle = AliasProperty(
+#                          get_angle, 
+#                          set_angle,
+#                          bind=['o_x','o_y','to_x', 'to_y']
+#                         )
+#    distance = AliasProperty(
+#                          get_distance, 
+#                          set_distance,
+#                          bind=['o_x','o_y','to_x', 'to_y']
+#                         )
+    def get_to_x(self):
+        return self.o_x + (math.cos(self.angle * piby180) * self.distance)
 
-    def set_angle(self,angle):
-        self.to_x = self.o_x + (math.cos(angle * piby180) * self.distance)
-        self.to_y = self.o_y + (math.sin(angle * piby180) * self.distance)
+    def get_to_y(self):
+        return self.o_y + (math.sin(self.angle * piby180) * self.distance)
 
-    def get_distance(self):
-        absx = abs(self.to_x-self.o_x) 
+    def set_to_x(self, to_x):
+        self.angle = ((math.atan2(to_x - self.o_x, self.o_y - self.to_y)/piby180)+630.0 ) % 360.0 
+        absx = abs(to_x-self.o_x) 
         absy = abs(self.to_y-self.o_y) 
-        return math.sqrt((absx*absx)+(absy*absy))
+        self.distance = math.sqrt((absx*absx)+(absy*absy))
 
-    def set_distance(self, distance):
-        self.to_x = self.o_x + ((math.cos(self.angle * piby180) * distance))
-        self.to_y = self.o_y + ((math.sin(self.angle * piby180) * distance))
+    def set_to_y(self, to_y):
+        self.angle = ((math.atan2(self.to_x - self.o_x, self.o_y - to_y)/piby180)+630.0 ) % 360.0 
+        absx = abs(self.to_x-self.o_x) 
+        absy = abs(to_y-self.o_y) 
+        self.distance = math.sqrt((absx*absx)+(absy*absy))
+
+    to_x = AliasProperty(
+                         get_to_x,
+                         set_to_x,
+                         bind=['o_x','o_y','angle','distance']
+                        )
+
+    to_y = AliasProperty(
+                         get_to_y,
+                         set_to_y,
+                         bind=['o_x','o_y','angle','distance']
+                        )
         
-    angle = AliasProperty(
-                          get_angle, 
-                          set_angle,
-                          bind=['o_x','o_y','to_x', 'to_y']
-                         )
-    distance = AliasProperty(
-                          get_distance, 
-                          set_distance,
-                          bind=['o_x','o_y','to_x', 'to_y']
-                         )
 def move_point(x,y,angle,distance):
     return  (
              x + (math.cos(angle * piby180) * distance),
