@@ -107,6 +107,7 @@ def move_point(x,y,angle,distance):
 
 class Arrow(Widget,KVector):
     head_size = NumericProperty(cm(0.5))
+    head_angle = NumericProperty(90.0)
     shaft_width = NumericProperty(cm(0.05))
     fletching_radius = NumericProperty(cm(0.1))
     main_color = ListProperty([1,1,1,0.7])
@@ -139,6 +140,7 @@ class Arrow(Widget,KVector):
                   to_x=self.update_dims,
                   to_y=self.update_dims,
                   head_size=self.update_dims,
+                  head_angle=self.update_dims,
                   shaft_width=self.update_shaft_width,
                   outline_color=self.update_outline_color,
                   main_color=self.update_color,
@@ -164,7 +166,8 @@ class Arrow(Widget,KVector):
 
     def update_dims(self, *args):
         shaft_x1, shaft_y1 = move_point(self.o_x, self.o_y, self.angle, self.fletching_radius / math.sqrt(2))
-        shaft_x2, shaft_y2 = move_point(self.to_x, self.to_y, self.angle, -self.head_size/math.sqrt(2.0))
+        shaft_x2, shaft_y2 = move_point(self.to_x, self.to_y, self.angle,
+                                        - math.cos(self.head_angle / 2.0 * piby180) * self.head_size)
         self.shaft.points = [
                              shaft_x1, 
                              shaft_y1,
@@ -190,8 +193,8 @@ class Arrow(Widget,KVector):
                                           shaft_or_x2,
                                           shaft_or_y2,
                                          ]
-        head_x1, head_y1 = move_point(self.to_x, self.to_y, self.angle + 135, self.head_size)
-        head_x2, head_y2 = move_point(self.to_x, self.to_y, self.angle - 135, self.head_size)
+        head_x1, head_y1 = move_point(self.to_x, self.to_y, self.angle + (180 - self.head_angle / 2.0), self.head_size)
+        head_x2, head_y2 = move_point(self.to_x, self.to_y, self.angle - (180 - self.head_angle / 2.0), self.head_size)
         self.head.vertices = [
                               self.to_x,
                               self.to_y, 
