@@ -113,6 +113,7 @@ class Arrow(Widget,KVector):
     main_color = ListProperty([1,1,1,0.7])
     outline_color = ListProperty([0,0,0,0.7])
     outline_width = NumericProperty(cm(0.01))
+    distortions = ListProperty([])
     
 
     def __init__(self,*args, **kwargs):
@@ -145,6 +146,7 @@ class Arrow(Widget,KVector):
                   outline_color=self.update_outline_color,
                   main_color=self.update_color,
                   outline_width=self.update_outline_width,
+                  distortions=self.update_dims,
                   )
         self.update_dims()
         self.update_shaft_width()
@@ -164,35 +166,57 @@ class Arrow(Widget,KVector):
     def update_color(self, *args):
         self.icolor.rgba = self.main_color
 
+    def create_distortions(self, x1, y1, x2, y2):
+        """
+        Add points for a bezier curve distorted by a fraction of the line length.
+        A distortion of [0.5] means that there will be one bezier point added in the middle of the line
+        and that point will be displaced perpendicularly by 0.5 * self.distance.
+        A distortion of [0.3, -0.5] means that there will be 2 points added, at 1/3 and 2/3 of the line
+        and those points will be displaced perpendicularly by 0.3 * self.distance and -0.5 * self.distance
+        meaning that the arrow will bend in both directions.
+        """
+        if not self.distortions:
+            return [x1, y1, x2, y2]
+
+        angle_perpendicular = self.angle + 90.0
+        points = len(self.distortions)
+
+        segments = [x1, y1]
+
+        # For 3 points, we have: x = (3x1 + x2) / 4, (2x1 + 2x2) / 4, (x1 + 3x2) / 4
+        for i, distortion in enumerate(self.distortions):
+            xpos = ((points - i) * x1 + (i + 1) * x2) / (points + 1)
+            ypos = ((points - i) * y1 + (i + 1) * y2) / (points + 1)
+            segments.extend(move_point(xpos, ypos, angle_perpendicular, self.distance * distortion))
+
+        segments.extend([x2, y2])
+
+        return segments
+
     def update_dims(self, *args):
         shaft_x1, shaft_y1 = move_point(self.o_x, self.o_y, self.angle, self.fletching_radius / math.sqrt(2))
         shaft_x2, shaft_y2 = move_point(self.to_x, self.to_y, self.angle,
                                         - math.cos(self.head_angle / 2.0 * piby180) * self.head_size)
-        self.shaft.points = [
-                             shaft_x1, 
-                             shaft_y1,
-                             shaft_x2,
-                             shaft_y2
-                            ]
+
+
+        if not self.distortions:
+            self.shaft.points = [shaft_x1, shaft_y1, shaft_x2, shaft_y2]
+        else:
+            self.shaft.bezier = self.create_distortions(shaft_x1, shaft_y1, shaft_x2, shaft_y2)
+
         shaft_ol_x1, shaft_ol_y1 = move_point(shaft_x1, shaft_y1, self.angle -90, self.shaft_width /0.6)
         shaft_ol_x2, shaft_ol_y2 = move_point(shaft_x2, shaft_y2, self.angle -90, self.shaft_width /0.6)
 
         shaft_or_x1, shaft_or_y1 = move_point(shaft_x1, shaft_y1, self.angle +90, self.shaft_width /0.6)
         shaft_or_x2, shaft_or_y2 = move_point(shaft_x2, shaft_y2, self.angle +90, self.shaft_width /0.6)
 
-        self.shaft_outline_left.points = [
-                                          shaft_ol_x1,
-                                          shaft_ol_y1,
-                                          shaft_ol_x2,
-                                          shaft_ol_y2,
-                                         ]
+        if not self.distortions:
+            self.shaft_outline_left.points = [shaft_ol_x1, shaft_ol_y1, shaft_ol_x2, shaft_ol_y2]
+            self.shaft_outline_right.points = [shaft_or_x1, shaft_or_y1, shaft_or_x2, shaft_or_y2]
+        else:
+            self.shaft_outline_left.bezier = self.create_distortions(shaft_ol_x1, shaft_ol_y1, shaft_ol_x2, shaft_ol_y2)
+            self.shaft_outline_right.bezier = self.create_distortions(shaft_or_x1, shaft_or_y1, shaft_or_x2, shaft_or_y2)
 
-        self.shaft_outline_right.points = [
-                                          shaft_or_x1,
-                                          shaft_or_y1,
-                                          shaft_or_x2,
-                                          shaft_or_y2,
-                                         ]
         head_x1, head_y1 = move_point(self.to_x, self.to_y, self.angle + (180 - self.head_angle / 2.0), self.head_size)
         head_x2, head_y2 = move_point(self.to_x, self.to_y, self.angle - (180 - self.head_angle / 2.0), self.head_size)
         self.head.vertices = [
