@@ -40,7 +40,9 @@ class ArrowTest(App):
                          #to_y=random()*self.layout.height,
                          angle=random()*30,
                          distance=40+(random()*100),
-                         fletching_radius=cm(0.4),
+                         fletching_radius=cm(0.2),
+                         distortions=[random() * -0.2, random() *0.3] if random()>0.5 else [],
+                         head_angle=40+(random()*60)
                         )
         self.layout.add_widget(newarrow)
         self.arrows.append(newarrow)
@@ -53,6 +55,9 @@ class ArrowTest(App):
             arrow.o_x, arrow.o_y = move_point(arrow.o_x,arrow.o_y,arrow.angle,16)
             arrow.main_color=[x for x in map(lambda y:y * 0.97, arrow.main_color)]
             arrow.outline_color=[x for x in map(lambda y:y * 0.97, arrow.outline_color)]
+            if arrow.distortions:
+                arrow.distortions= [x+(random()*0.1) -(random()*0.1) for x in arrow.distortions]
+                arrow.head_angle = arrow.head_angle + (random() * 10) - (random() * 10)
             if arrow.main_color[3] < 0.1:
                 self.arrows.remove(arrow)
                 self.layout.remove_widget(arrow)
